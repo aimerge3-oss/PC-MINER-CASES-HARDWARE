@@ -1,6 +1,5 @@
 /* Layout for the garage, farm, workshop and case screens */
 
-/* Grid of PC cards (Garage + Farm) */
 .pc-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -43,32 +42,13 @@
     object-fit: contain;
 }
 
-.pc-name {
-    font-weight: 600;
-}
+.pc-name { font-weight: 600; }
 
-/* Cases */
-.case-card {
-    margin-bottom: 12px;
-}
+.case-card { margin-bottom: 12px; }
+.case-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.case-actions .button { flex: 1 1 100px; }
 
-.case-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.case-actions .button {
-    flex: 1 1 100px;
-}
-
-/* Inventory */
-.inventory-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
+.inventory-list { display: flex; flex-direction: column; gap: 8px; }
 .inventory-item {
     display: flex;
     align-items: center;
@@ -78,26 +58,10 @@
     border-radius: 12px;
     flex-wrap: wrap;
 }
+.inventory-item img { width: 40px; height: 40px; object-fit: contain; }
+.inventory-info { display: flex; flex-direction: column; flex: 1 1 120px; }
+.inventory-item .button { margin-left: auto; padding: 8px 12px; font-size: 0.85rem; }
 
-.inventory-item img {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
-}
-
-.inventory-info {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 120px;
-}
-
-.inventory-item .button {
-    margin-left: auto;
-    padding: 8px 12px;
-    font-size: 0.85rem;
-}
-
-/* Workshop */
 .workshop-row {
     display: flex;
     align-items: center;
@@ -106,51 +70,117 @@
     padding: 8px 0;
     border-bottom: 1px solid var(--border-color);
 }
+.workshop-row select { flex: 1 1 150px; margin-bottom: 0; }
+.workshop-row .button { padding: 10px 14px; font-size: 0.85rem; }
+.slot-label { min-width: 60px; }
+.slot-current { flex: 1 1 100px; color: var(--text-muted); font-size: 0.9rem; }
 
-.workshop-row select {
-    flex: 1 1 150px;
-    margin-bottom: 0;
-}
-
-.workshop-row .button {
-    padding: 10px 14px;
-    font-size: 0.85rem;
-}
-
-.slot-label {
-    min-width: 60px;
-}
-
-.slot-current {
-    flex: 1 1 100px;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-}
-
-/* Exchange + menu */
-.exchange-actions,
-.menu-actions {
+.exchange-actions, .menu-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 12px;
 }
+.achievement-list { padding-left: 0; list-style: none; }
 
-.achievement-list {
-    padding-left: 0;
-    list-style: none;
+/* Cases screen */
+.cases-screen { max-width: 520px; margin: 0 auto; }
+.case-picker { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.case-chip {
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-color);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+.case-chip.active {
+    background: var(--accent-color);
+    color: #fff;
+    border-color: var(--accent-color);
+}
+.case-odds {
+    background: rgba(0,0,0,0.04);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+}
+.case-odds-title { font-weight: 700; margin-bottom: 6px; }
+.case-odds-bars { display: flex; flex-wrap: wrap; gap: 10px; }
+.odds-row { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; }
+.odds-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: #888; }
+.odds-dot.rarity-gray { background: #888; }
+.odds-dot.rarity-blue { background: #007aff; }
+.odds-dot.rarity-purple { background: #a020f0; }
+.odds-dot.rarity-yellow { background: #ffd700; }
+.odds-dot.rarity-red { background: #ff3b30; }
+
+.case-preview-grid, .loot-result-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+    gap: 8px;
+    margin: 12px 0;
+}
+.loot-cell {
+    border-radius: 12px;
+    padding: 8px 4px;
+    text-align: center;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-height: 96px;
+}
+.loot-cell img { width: 48px; height: 48px; object-fit: contain; }
+.loot-name { font-size: 0.7rem; line-height: 1.2; color: var(--text-color); }
+.loot-empty { opacity: 0.5; justify-content: center; }
+.loot-q { font-size: 1.6rem; color: var(--text-muted); }
+.loot-reveal { animation: lootPop 0.25s ease-out; }
+@keyframes lootPop {
+    from { transform: scale(0.6); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+.rarity-bg-gray { background: #f0f0f0; }
+.rarity-bg-blue { background: #d6eaff; }
+.rarity-bg-purple { background: #f0e0ff; }
+.rarity-bg-yellow { background: #fff6d0; }
+.rarity-bg-red { background: #ffe0de; }
+@media (prefers-color-scheme: dark) {
+    .rarity-bg-gray { background: #2c2c2e; }
+    .rarity-bg-blue { background: #1a2a44; }
+    .rarity-bg-purple { background: #2a1a3a; }
+    .rarity-bg-yellow { background: #3a3210; }
+    .rarity-bg-red { background: #3a1a1a; }
 }
 
-/* Responsive adjustments */
+.case-qty { display: flex; gap: 8px; justify-content: center; margin: 12px 0; }
+.qty-btn {
+    flex: 1;
+    max-width: 80px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-color);
+    border-radius: 12px;
+    padding: 10px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+.qty-btn.active {
+    background: #fff;
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(0,122,255,0.25);
+}
+.case-open-btn { width: 100%; padding: 14px; font-size: 1rem; border-radius: 16px; }
+.loot-modal { max-width: 420px; width: 92vw; }
+
 @media (max-width: 600px) {
-    .pc-grid {
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    }
-    .pc-card {
-        padding: 8px;
-    }
-    .pc-card img {
-        width: 48px;
-        height: 48px;
-    }
+    .pc-grid { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+    .pc-card { padding: 8px; }
+    .pc-card img { width: 48px; height: 48px; }
 }

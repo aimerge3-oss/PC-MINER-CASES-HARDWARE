@@ -15,10 +15,24 @@
         console.error(message);
     }
 
+    let ticksSinceRate = 0;
+    const RATE_EVERY_TICKS = 15; // exchange rate fluctuates every 15 seconds
+
     function tick() {
         tickMining(1);
         refreshHUD();
         ticksSinceSave += 1;
+        ticksSinceRate += 1;
+        if (ticksSinceRate >= RATE_EVERY_TICKS) {
+            ticksSinceRate = 0;
+            if (typeof fluctuateExchangeRate === 'function') {
+                fluctuateExchangeRate();
+                // Live-update rate label if Exchange screen is open
+                const rateNode = document.getElementById('liveExchangeRate');
+                if (rateNode) rateNode.textContent = String(state.exchangeRate);
+                refreshHUD();
+            }
+        }
         if (ticksSinceSave >= AUTOSAVE_EVERY_TICKS) {
             ticksSinceSave = 0;
             saveGame();
