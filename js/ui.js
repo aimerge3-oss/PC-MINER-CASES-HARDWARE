@@ -56,6 +56,7 @@ function renderGarage() {
     const fillPercent = state.maxStorage > 0 ? Math.min(100, (state.storage / state.maxStorage) * 100) : 0;
     container.innerHTML = `
         <h2>Доход майнинга</h2>
+        <p>Деньги: <strong><span id="moneyBalance">${formatNumber(state.money)}</span> ₽</strong></p>
         <p>Баланс: <strong><span id="byteBalance">${formatNumber(state.bytes)}</span> BYTE</strong></p>
         <p>Монеты: <strong>${formatNumber(state.coins)} COIN</strong> · Уровень ${state.level} (${formatNumber(state.exp)} / ${formatNumber(expNeeded(state.level))} EXP)</p>
         <p>Доход в час: <span id="hourlyIncome">${(state.miningRate * 3600).toFixed(2)}</span> BYTE</p>
@@ -111,6 +112,7 @@ function rollCaseItem(caseDef) {
 function renderCases() {
     const container = createEl('div', 'card fade-in');
     container.appendChild(createEl('h2', '', 'Кейсы'));
+    container.appendChild(createEl('p', '', 'Баланс: ' + formatNumber(state.money) + ' ₽'));
     const list = createEl('div', 'case-list');
     CASES.forEach(function (caseDef) {
         const caseCard = createEl('div', 'card case-card');
@@ -148,7 +150,6 @@ function openCase(caseId, count) {
         notify('Недостаточно средств');
         return;
     }
-    // Results are decided up-front so the charge and the rewards always match.
     const results = [];
     for (let i = 0; i < amount; i++) {
         const item = rollCaseItem(caseDef);
@@ -163,7 +164,6 @@ function openCase(caseId, count) {
         return;
     }
     state.money -= caseDef.price * results.length;
-    // Grant the rewards before the animation so a reload mid-spin cannot lose them.
     results.forEach(function (item) {
         state.inventory.push(Object.assign({}, item, { owned: true }));
     });
@@ -212,8 +212,7 @@ function showCaseResult(results, index, caseDef) {
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
 
-    const itemWidth = 110; // 100px card + 5px margins
-    // The track starts at the horizontal centre (pointer), so shift the target card's centre there.
+    const itemWidth = 110;
     const targetOffset = -(midIdx * itemWidth + itemWidth / 2);
     track.style.transition = 'transform 2s cubic-bezier(0.25, 0.1, 0.25, 1)';
     requestAnimationFrame(function () {
@@ -234,6 +233,7 @@ function getSellPrice(item) {
 function renderInventory() {
     const container = createEl('div', 'card fade-in');
     container.appendChild(createEl('h2', '', 'Инвентарь'));
+    container.appendChild(createEl('p', '', 'Баланс: ' + formatNumber(state.money) + ' ₽'));
     if (!Array.isArray(state.inventory) || state.inventory.length === 0) {
         container.appendChild(createEl('p', '', 'Инвентарь пуст.'));
         return container;
@@ -252,7 +252,8 @@ function renderInventory() {
         row.appendChild(info);
         const sellBtn = createEl('button', 'button', 'Продать за ' + formatNumber(getSellPrice(item)) + ' ₽');
         sellBtn.type = 'button';
-        sellBtn.onclick = function () { sellItem(state.inventory.indexOf(item)); };
+        sellBtn.setAttribute('data-action', 'sell-item');
+        sellBtn.setAttribute('data-index', String(state.inventory.indexOf(item)));
         row.appendChild(sellBtn);
         list.appendChild(row);
     });
@@ -272,7 +273,6 @@ function sellItem(invIndex) {
 // ========== WORKSHOP ==========
 const PC_SLOTS = ['cpu', 'gpu', 'mobo', 'ram', 'storage', 'psu', 'case'];
 
-// Returns an error message when `item` cannot be placed in `slot`, otherwise null.
 function checkCompatibility(pc, slot, item) {
     if (!pc || !item) return 'Некорректный предмет';
     const cpu = getItemById(pc.components.cpu);
@@ -333,7 +333,12 @@ function renderWorkshop() {
 
         const btn = createEl('button', 'button', 'Установить');
         btn.type = 'button';
-        btn.onclick = function () { installComponent(pc, slot, select.value); };
+        btn.setAttribute('data-action', 'install');
+        btn.setAttribute('data-slot', slot);
+        btn.setAttribute('data-index', select.value);
+        select.addEventListener('change', function () {
+            btn.setAttribute('data-index', select.value);
+        });
         row.appendChild(btn);
         container.appendChild(row);
     });
@@ -432,20 +437,19 @@ function renderFarm() {
         const selectBtn = createEl('button', 'button', pc.id === state.activePCId ? 'Активный' : 'Выбрать');
         selectBtn.type = 'button';
         selectBtn.disabled = pc.id === state.activePCId;
-        selectBtn.onclick = function () {
-            state.activePCId = pc.id;
-            saveGame();
-            nav.render();
-        };
+        selectBtn.setAttribute('data-action', 'select-pc');
+        selectBtn.setAttribute('data-pc-id', String(pc.id));
         card.appendChild(selectBtn);
         list.appendChild(card);
     });
     container.appendChild(list);
 
+    const moneyLine = createEl('p', '', 'Баланс: ' + formatNumber(state.money) + ' ₽');
+    container.appendChild(moneyLine);
     const addBtn = createEl('button', 'button', 'Добавить ПК — ' + formatNumber(PC_BUILD_COST) + ' ₽');
     addBtn.type = 'button';
     addBtn.disabled = state.money < PC_BUILD_COST;
-    addBtn.onclick = addComputer;
+    addBtn.setAttribute('data-action', 'add-pc');
     container.appendChild(addBtn);
     return container;
 }
@@ -518,12 +522,17 @@ function resetGame() {
 }
 
 // ========== HUD ==========
-// Light-weight refresh used by the 1s game loop (avoids re-rendering inputs).
 function refreshHUD() {
     const setText = function (id, value) {
         const node = document.getElementById(id);
         if (node) node.textContent = value;
     };
+    // Persistent header balances (always visible on every screen)
+    setText('hdrMoney', formatNumber(state.money));
+    setText('hdrBytes', formatNumber(state.bytes));
+    setText('hdrCoins', formatNumber(state.coins));
+    // Garage screen widgets
+    setText('moneyBalance', formatNumber(state.money));
     setText('byteBalance', formatNumber(state.bytes));
     setText('hourlyIncome', (state.miningRate * 3600).toFixed(2));
     setText('totalPower', String(totalPower()));
@@ -539,7 +548,6 @@ function refreshHUD() {
 }
 
 // ========== ACTION DISPATCH ==========
-// Single delegated click handler (bound in main.js) keeps markup free of inline JS.
 function handleAction(action, dataset) {
     const data = dataset || {};
     switch (action) {
@@ -568,6 +576,22 @@ function handleAction(action, dataset) {
         break;
     case 'reset':
         resetGame();
+        break;
+    case 'sell-item':
+        sellItem(Number(data.index));
+        break;
+    case 'install': {
+        const pc = getActivePC();
+        if (pc) installComponent(pc, data.slot, data.index);
+        break;
+    }
+    case 'select-pc':
+        state.activePCId = Number(data.pcId);
+        saveGame();
+        nav.render();
+        break;
+    case 'add-pc':
+        addComputer();
         break;
     default:
         break;
