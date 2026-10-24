@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <defs><linearGradient id="cl" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c53030"/><stop offset="100%" stop-color="#742a2a"/></linearGradient></defs>
+  <rect x="12" y="2" width="40" height="60" rx="4" fill="url(#cl)"/>
+  <rect x="16" y="8" width="32" height="24" rx="2" fill="#1a202c" stroke="#fc8181" stroke-width="1.5"/>
+  <circle cx="32" cy="44" r="8" fill="#1a202c" stroke="#feb2b2" stroke-width="1.5"/>
+  <rect x="20" y="54" width="24" height="5" rx="1" fill="#9b2c2c"/>
+  <circle cx="42" cy="12" r="2.5" fill="#f6e05e"/>
+  <text x="32" y="22" text-anchor="middle" font-size="7" fill="#fc8181" font-family="sans-serif">LEGEND</text>
+</svg>
