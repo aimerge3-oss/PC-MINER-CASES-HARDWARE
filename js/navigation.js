@@ -1,12 +1,15 @@
 // Bottom-navigation controller.
-// Every screen is a pure render function from ui.js; this module only swaps them.
-const SCREENS = ['garage', 'cases', 'workshop', 'inventory', 'exchange', 'farm', 'menu'];
+// Screens not in the bottom bar (profile, inventory, exchange, farm) stay reachable via actions.
+const SCREENS = ['garage', 'cases', 'workshop', 'inventory', 'exchange', 'farm', 'menu', 'profile'];
 
 const nav = {
     current: 'garage',
+    workshopTab: 'build', // 'build' | 'stock'
 
     show(screen) {
         this.current = SCREENS.indexOf(screen) !== -1 ? screen : 'garage';
+        if (screen === 'inventory') this.workshopTab = 'stock';
+        if (screen === 'workshop') this.workshopTab = this.workshopTab || 'build';
         this.render();
     },
 
@@ -19,25 +22,36 @@ const nav = {
         if (!content) return;
         content.innerHTML = '';
         const renderers = {
-            garage: function () { content.appendChild(renderGarage()); content.appendChild(renderPCGrid()); },
+            garage: function () {
+                content.appendChild(renderGarage());
+                content.appendChild(renderPCGrid());
+            },
             cases: function () { content.appendChild(renderCases()); },
-            workshop: function () { content.appendChild(renderWorkshop()); },
-            inventory: function () { content.appendChild(renderInventory()); },
+            workshop: function () {
+                if (typeof nav !== 'undefined') nav.workshopTab = nav.workshopTab || 'build';
+                content.appendChild(renderWorkshop());
+            },
+            inventory: function () {
+                if (typeof nav !== 'undefined') nav.workshopTab = 'stock';
+                content.appendChild(renderWorkshop());
+            },
             exchange: function () { content.appendChild(renderExchange()); },
             farm: function () { content.appendChild(renderFarm()); },
-            menu: function () { content.appendChild(renderMenu()); }
+            menu: function () { content.appendChild(renderMenu()); },
+            profile: function () { content.appendChild(renderProfile()); }
         };
         const render = renderers[this.current] || renderers.garage;
         render();
         this.updateActiveButton();
-        // Paint live values (storage bar) immediately instead of waiting for the next tick.
         if (typeof refreshHUD === 'function') refreshHUD();
     },
 
     updateActiveButton() {
         const buttons = document.querySelectorAll('#main-nav [data-screen]');
         Array.prototype.forEach.call(buttons, function (button) {
-            const isActive = button.getAttribute('data-screen') === nav.current;
+            const screen = button.getAttribute('data-screen');
+            const isActive = screen === nav.current ||
+                (screen === 'workshop' && nav.current === 'workshop');
             button.classList.toggle('active', isActive);
             button.setAttribute('aria-current', isActive ? 'page' : 'false');
         });

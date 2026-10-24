@@ -8,8 +8,6 @@
     <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
     <title>PC MINER: CASES & HARDWARE</title>
     <link rel="icon" href="assets/icons/cpu.svg" type="image/svg+xml">
-
-    <!-- Стили -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/animations.css">
@@ -18,30 +16,31 @@
 <body>
 
     <header class="app-header">
-        <h1>PC MINER: CASES & HARDWARE</h1>
-        <div class="balance-bar" aria-live="polite">
-            <span class="bal-item"><span id="hdrMoney">0</span>&nbsp;₽</span>
-            <span class="bal-item"><span id="hdrBytes">0</span>&nbsp;BYTE</span>
-            <span class="bal-item"><span id="hdrCoins">0</span>&nbsp;COIN</span>
+        <button type="button" class="profile-btn" data-action="nav" data-screen="profile" aria-label="Профиль">
+            <span class="profile-avatar" id="hdrAvatar">1</span>
+        </button>
+        <div class="header-center">
+            <h1>PC MINER</h1>
+            <div class="balance-bar" aria-live="polite">
+                <span class="bal-item"><span id="hdrMoney">0</span>&nbsp;₽</span>
+                <span class="bal-item"><span id="hdrBytes">0</span>&nbsp;BYTE</span>
+                <span class="bal-item"><span id="hdrCoins">0</span>&nbsp;COIN</span>
+            </div>
         </div>
+        <span class="header-spacer" aria-hidden="true"></span>
     </header>
 
-    <!-- Сюда функции renderGarage, renderCases и т.д. вставляют HTML -->
     <main id="content" class="app-content">
         <p class="loading">Загрузка…</p>
     </main>
 
     <nav id="main-nav" class="nav-bar" aria-label="Основная навигация">
-        <button type="button" data-action="nav" data-screen="garage">Garage</button>
-        <button type="button" data-action="nav" data-screen="cases">Cases</button>
-        <button type="button" data-action="nav" data-screen="workshop">Workshop</button>
-        <button type="button" data-action="nav" data-screen="inventory">Inventory</button>
-        <button type="button" data-action="nav" data-screen="exchange">Exchange</button>
-        <button type="button" data-action="nav" data-screen="farm">Farm</button>
-        <button type="button" data-action="nav" data-screen="menu">Menu</button>
+        <button type="button" data-action="nav" data-screen="garage">Гараж</button>
+        <button type="button" data-action="nav" data-screen="cases">Кейсы</button>
+        <button type="button" data-action="nav" data-screen="workshop">Мастерская</button>
+        <button type="button" data-action="nav" data-screen="menu">Меню</button>
     </nav>
 
-    <!-- Порядок важен: каталоги → состояние → навигация → UI → точка входа -->
     <script src="js/data/items.js"></script>
     <script src="js/data/cases.js"></script>
     <script src="js/state.js"></script>
