@@ -1,5 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-  <rect width="64" height="64" fill="#e0e0e0"/>
-  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="12" fill="#333">PSU</text>
+  <rect x="6" y="12" width="52" height="40" rx="4" fill="#4a5568"/>
+  <circle cx="32" cy="32" r="12" fill="#1a202c" stroke="#a0aec0" stroke-width="2"/>
+  <circle cx="32" cy="32" r="4" fill="#718096"/>
+  <g stroke="#718096" stroke-width="2">
+    <line x1="32" y1="20" x2="32" y2="24"/><line x1="32" y1="40" x2="32" y2="44"/>
+    <line x1="20" y1="32" x2="24" y2="32"/><line x1="40" y1="32" x2="44" y2="32"/>
+  </g>
+  <rect x="10" y="48" width="10" height="4" rx="1" fill="#e53e3e"/>
 </svg>

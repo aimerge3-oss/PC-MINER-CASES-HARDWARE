@@ -1,5 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-  <rect width="64" height="64" fill="#e0e0e0"/>
-  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="12" fill="#333">RAM</text>
+  <rect x="6" y="18" width="52" height="28" rx="3" fill="#553c9a"/>
+  <rect x="10" y="22" width="8" height="16" rx="1" fill="#b794f4"/>
+  <rect x="22" y="22" width="8" height="16" rx="1" fill="#b794f4"/>
+  <rect x="34" y="22" width="8" height="16" rx="1" fill="#b794f4"/>
+  <rect x="46" y="22" width="8" height="16" rx="1" fill="#b794f4"/>
+  <rect x="8" y="46" width="4" height="6" fill="#2d3748"/>
+  <rect x="16" y="46" width="4" height="6" fill="#2d3748"/>
+  <rect x="24" y="46" width="4" height="6" fill="#2d3748"/>
+  <rect x="32" y="46" width="4" height="6" fill="#2d3748"/>
+  <rect x="40" y="46" width="4" height="6" fill="#2d3748"/>
+  <rect x="48" y="46" width="4" height="6" fill="#2d3748"/>
 </svg>

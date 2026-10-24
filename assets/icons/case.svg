@@ -1,5 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-  <rect width="64" height="64" fill="#e0e0e0"/>
-  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="12" fill="#333">CASE</text>
+  <rect x="14" y="4" width="36" height="56" rx="3" fill="#2d3748"/>
+  <rect x="18" y="10" width="28" height="20" rx="2" fill="#1a202c" stroke="#4a5568" stroke-width="1"/>
+  <circle cx="32" cy="42" r="6" fill="#1a202c" stroke="#718096" stroke-width="1.5"/>
+  <rect x="22" y="52" width="20" height="4" rx="1" fill="#4a5568"/>
+  <circle cx="40" cy="14" r="2" fill="#48bb78"/>
 </svg>

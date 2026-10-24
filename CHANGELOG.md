@@ -1,5 +1,23 @@
 # Changelog — PC MINER: CASES & HARDWARE
 
+## [Unreleased] — Economy, art & UX polish
+
+### Added
+- Expanded hardware catalog to 28 items across gray → red with unique SVG artwork per tier.
+- New mid / high / enthusiast / legendary parts (Mid GPU, High CPU, Legendary GPU/CPU, etc.).
+- Money (₽) balance is now visible on Garage, Cases, Inventory and Farm screens.
+- Hardware icons redrawn as proper component illustrations (CPU, GPU, motherboard, RAM, SSD, PSU, case + tier variants).
+
+### Fixed
+- Critical UX bug: ₽ balance was never shown anywhere in the UI.
+- Remaining inline `onclick` handlers in Inventory / Workshop / Farm replaced with delegated `data-action` clicks.
+- Case EV rebalanced so reselling drops cannot profit over the case price.
+- Basic case pool and tests updated for the expanded catalog.
+
+### Changed
+- Standard Black Case catalog price set to 2 500 ₽ (was free).
+- Case contents weighted for clearer progression from Basic → Premium.
+
 ## [Unreleased] — Compliance & hardening pass
 
 ### Fixed
