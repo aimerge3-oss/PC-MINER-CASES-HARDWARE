@@ -8,21 +8,19 @@ const STORAGE_HOURS = 6;        // storage holds this many hours of production
 const SELL_RATE = 0.5;          // items sell for this share of their price
 const PC_BUILD_COST = 25000;    // cost of an additional PC in the Farm
 const DEFAULT_EXCHANGE_RATE = 1000; // BYTE per 1 COIN
+const RATE_MIN = 800;
+const RATE_MAX = 1200;
+const RATE_STEP = 0.03; // ±3% jitter per tick
+const COIN_TO_RUB = 50; // 1 COIN = 50 ₽
 const MAX_EXCHANGE_LOG = 50;
 const EXP_REWARDS = { caseOpen: 5, install: 5, exchange: 10 };
 
 const state = {
-    // Purchase currency (RUB)
     money: 0,
-    // Mined currency
     bytes: 0,
-    // Exchangeable prestige currency
     coins: 0,
-    // BYTE waiting to be collected
     storage: 0,
-    // Maximum storable BYTE (6 hours of current income)
     maxStorage: 0,
-    // Mining rate in BYTE per second, summed over all computers
     miningRate: 0,
     exp: 0,
     level: 1,
@@ -49,7 +47,6 @@ function createStarterState() {
         exp: 0,
         level: 1,
         achievements: {},
-        // Everything in the starter kit is installed, so the inventory starts empty.
         inventory: [],
         activePCId: 1,
         computers: [starterPc],
@@ -58,8 +55,6 @@ function createStarterState() {
         exchangeRate: DEFAULT_EXCHANGE_RATE
     };
 }
-
-// ---------- helpers ----------
 
 function toNonNegativeNumber(value, fallback) {
     const num = Number(value);
@@ -71,7 +66,6 @@ function saveGame() {
         localStorage.setItem(SAVE_KEY, JSON.stringify(state));
         return true;
     } catch (err) {
-        // Storage can be unavailable (private mode) or full; the game keeps running.
         console.warn('Не удалось сохранить игру:', err);
         return false;
     }
@@ -86,25 +80,20 @@ function loadGame() {
         console.warn('Сохранение повреждено, начинаем новую игру:', err);
         saved = null;
     }
-
     const source = saved && typeof saved === 'object' ? normalizeState(saved) : createStarterState();
     Object.keys(state).forEach(function (key) { delete state[key]; });
     Object.assign(state, source);
-
     updateMiningStats();
     if (saved) applyOfflineProgress();
     if (!state.lastUpdate) state.lastUpdate = Date.now();
-
     checkAchievements();
     saveGame();
     return state;
 }
 
-// Fills in missing / invalid fields so an old or hand-edited save cannot break the game.
 function normalizeState(raw) {
     const defaults = createStarterState();
     const merged = Object.assign({}, defaults, raw);
-
     merged.money = toNonNegativeNumber(raw.money, defaults.money);
     merged.bytes = toNonNegativeNumber(raw.bytes, 0);
     merged.coins = toNonNegativeNumber(raw.coins, 0);
@@ -119,7 +108,6 @@ function normalizeState(raw) {
     merged.inventory = Array.isArray(raw.inventory) ? raw.inventory.filter(function (item) {
         return item && typeof item === 'object' && item.id !== undefined;
     }) : [];
-
     const computers = Array.isArray(raw.computers) ? raw.computers.filter(function (pc) {
         return pc && typeof pc === 'object' && Number.isFinite(Number(pc.id));
     }).map(function (pc) {
@@ -130,16 +118,12 @@ function normalizeState(raw) {
             power: 0
         };
     }) : [];
-
     merged.computers = computers.length ? computers : defaults.computers;
     const activeExists = merged.computers.some(function (pc) { return pc.id === Number(raw.activePCId); });
     merged.activePCId = activeExists ? Number(raw.activePCId) : merged.computers[0].id;
     merged.lastUpdate = Number.isFinite(Number(raw.lastUpdate)) ? Number(raw.lastUpdate) : Date.now();
-
     return merged;
 }
-
-// ---------- mining ----------
 
 function calculatePower(pc) {
     if (!pc || !pc.components) return 0;
@@ -159,7 +143,6 @@ function updateMiningStats() {
     const totalPower = state.computers.reduce(function (sum, pc) { return sum + pc.power; }, 0);
     state.miningRate = totalPower * MINING_FACTOR;
     state.maxStorage = state.miningRate * 3600 * STORAGE_HOURS;
-    // A downgrade must never leave more in storage than the new capacity.
     if (state.storage > state.maxStorage) state.storage = state.maxStorage;
     return { totalPower: totalPower, miningRate: state.miningRate, maxStorage: state.maxStorage };
 }
@@ -172,7 +155,6 @@ function getTimeToFull() {
 
 function tickMining(seconds) {
     const dt = Number.isFinite(seconds) && seconds > 0 ? seconds : 1;
-    // Always advance the timestamp: idle time at zero rate must not be credited later.
     state.lastUpdate = Date.now();
     if (state.miningRate <= 0) return 0;
     const spaceLeft = Math.max(0, state.maxStorage - state.storage);
@@ -191,7 +173,6 @@ function applyOfflineProgress() {
     updateMiningStats();
     const spaceLeft = Math.max(0, state.maxStorage - state.storage);
     if (state.miningRate <= 0 || spaceLeft <= 0) {
-        // Nothing can be produced; start counting again from now.
         state.lastUpdate = now;
         return 0;
     }
@@ -199,7 +180,6 @@ function applyOfflineProgress() {
     const actualAdd = Math.min(possibleAdd, spaceLeft);
     state.storage += actualAdd;
     if (actualAdd < possibleAdd) {
-        // Storage filled up before the player returned: keep the timestamp at that moment.
         const secsUntilFull = Math.floor(spaceLeft / state.miningRate);
         state.lastUpdate = state.lastUpdate + secsUntilFull * 1000;
     } else {
@@ -221,8 +201,6 @@ function collectBytes() {
     saveGame();
     return collected;
 }
-
-// ---------- exchange ----------
 
 function exchangeBytesToCoins(amount) {
     const value = Number(amount);
@@ -249,7 +227,38 @@ function exchangeBytesToCoins(amount) {
     return coinsGained;
 }
 
-// ---------- progression ----------
+function fluctuateExchangeRate() {
+    const direction = Math.random() < 0.5 ? -1 : 1;
+    const step = RATE_STEP * (0.5 + Math.random());
+    let next = Math.round(state.exchangeRate * (1 + direction * step));
+    if (next < RATE_MIN) next = RATE_MIN;
+    if (next > RATE_MAX) next = RATE_MAX;
+    if (next === state.exchangeRate) {
+        next = Math.min(RATE_MAX, Math.max(RATE_MIN, next + direction));
+    }
+    state.exchangeRate = next;
+    return next;
+}
+
+function exchangeCoinsToMoney(amount) {
+    const value = Number(amount);
+    if (!Number.isFinite(value) || value <= 0 || Math.floor(value) !== value) {
+        notify('Введите корректное целое количество COIN');
+        return null;
+    }
+    if (value > state.coins) {
+        notify('Недостаточно COIN');
+        return null;
+    }
+    const rub = value * COIN_TO_RUB;
+    state.coins -= value;
+    state.money += rub;
+    if (!Array.isArray(state.exchangeLog)) state.exchangeLog = [];
+    state.exchangeLog.unshift({ time: Date.now(), coins: value, rub: rub, type: 'coin-to-rub' });
+    state.exchangeLog = state.exchangeLog.slice(0, MAX_EXCHANGE_LOG);
+    saveGame();
+    return rub;
+}
 
 function expNeeded(level) {
     return Math.max(1, Math.floor(level)) * 1000;
