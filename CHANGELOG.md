@@ -26,8 +26,13 @@
 - Autosave every 10 seconds plus save on `pagehide`/`beforeunload` and tab hide.
 
 ### Added
-- `tests/validate.js` — 43 dependency-free headless checks (assets, catalogs, economy, storage, offline, exchange, progression, compatibility, cases, persistence).
-- `package.json` with `npm test`.
+- `tests/validate.js` — 44 dependency-free logic/static checks (assets, relative deploy paths, catalogs, economy, storage, offline, exchange, progression, compatibility, cases, persistence).
+- `tests/browser.test.js` — 20 jsdom browser tests that serve the real site over HTTP and click through it: boot, navigation, mining loop, collect, exchange, case reveal, selling, workshop, farm, menu, reload with offline progress, reset, markup and an axe-core accessibility audit.
+- `package.json` with `npm test`, `npm run test:browser` and `npm run test:all` (devDependencies: jsdom, axe-core).
+
+### Changed
+- Replaced non-standard `innerText` assignments with `textContent` so rendering works in all DOM implementations.
+- Verified that `index.html` only uses relative asset paths, so the game works at the domain root or any subpath on Cloudflare Pages.
 
 ### Removed
 - Empty placeholder files: `js/q`, `js/data/q`, `js/systems/q`, `css/2`, `assets/icons/1`, `assets/images/1`.

@@ -40,5 +40,8 @@
 - [x] Removed empty placeholder files (`js/q`, `js/data/q`, `js/systems/q`, `css/2`, `assets/*/1`)
 - [x] Removed all inline event handlers and inline styles (delegated `data-action` clicks)
 - [x] Added dark-mode support and `prefers-reduced-motion` handling
-- [x] Added `tests/validate.js` (43 headless checks) and `npm test`
+- [x] Added `tests/validate.js` (44 dependency-free logic/static checks) and `npm test`
+- [x] Added `tests/browser.test.js` (20 jsdom browser tests incl. axe-core audit) and `npm run test:browser`
+- [x] Replaced non-standard `innerText` with `textContent` for cross-environment compatibility
+- [x] Verified relative asset paths so the game deploys at any Cloudflare Pages subpath
 - [x] Documentation aligned with the implementation

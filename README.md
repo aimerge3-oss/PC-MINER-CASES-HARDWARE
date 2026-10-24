@@ -34,13 +34,20 @@ Open `index.html` in any modern browser. No server or installation is required.
 
 ## How to test
 
-The project ships with dependency-free headless checks (Node.js 18+):
-
 ```bash
-node tests/validate.js     # or: npm test
+npm test              # 44 dependency-free logic/static checks (no install needed)
+npm run test:browser  # 20 browser tests in jsdom (npm install required)
+npm run test:all      # both suites
 ```
 
-The suite verifies asset references, catalog/case integrity, economy maths, storage and offline caps, exchange validation, progression, compatibility rules, case opening, persistence, and boots the game in a stubbed DOM.
+- `tests/validate.js` — asset/script-order integrity, relative deploy paths,
+  catalog and case definitions, economy maths, storage/offline caps, exchange
+  validation, progression, compatibility, case opening, persistence migration,
+  every screen rendering, and a 3 000-tick invariant simulation.
+- `tests/browser.test.js` — serves the real site over HTTP and drives it in
+  jsdom: boot, navigation, collect, exchange, case reveal, selling, workshop
+  installs, farm, menu, reload with offline earnings, reset, markup checks and
+  an axe-core accessibility audit.
 
 ## Project structure
 
@@ -59,7 +66,8 @@ js/
   ui.js             # screen renderers, actions and HUD updates
   main.js           # entry point: boot, game loop, autosave
 assets/icons/       # SVG component icons
-tests/validate.js   # headless compliance checks
+tests/validate.js   # dependency-free logic/static checks
+tests/browser.test.js # jsdom browser tests (dev only)
 ```
 
 ## Documentation
