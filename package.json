@@ -4,10 +4,16 @@
   "private": true,
   "description": "Browser-based PC building and mining simulator (vanilla HTML/CSS/JS)",
   "scripts": {
-    "test": "node tests/validate.js"
+    "test": "node tests/validate.js",
+    "test:browser": "node tests/browser.test.js",
+    "test:all": "npm test && npm run test:browser"
   },
   "engines": {
     "node": ">=18"
   },
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "axe-core": "^4.14.0",
+    "jsdom": "^26.1.0"
+  }
 }

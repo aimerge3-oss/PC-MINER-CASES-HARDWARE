@@ -203,6 +203,15 @@ check('index.html exposes the container and navigation ids used by the app', () 
     assert(/<meta name="viewport"/.test(html), 'missing viewport');
 });
 
+check('index.html uses relative asset paths (deployable from any subpath)', () => {
+    const html = read('index.html');
+    const refs = [...html.matchAll(/(?:href|src)="([^"]+)"/g)].map((match) => match[1]);
+    assert(refs.length > 0, 'no asset references found');
+    refs.forEach((ref) => {
+        assert(!/^(\/|[a-z]+:)/i.test(ref), 'absolute asset path breaks subpath hosting: ' + ref);
+    });
+});
+
 // ---------- boot in a stubbed DOM ----------
 const env = createSandbox();
 const context = vm.createContext(env.sandbox);

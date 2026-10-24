@@ -2,7 +2,7 @@
 function createEl(tag, className, text) {
     const node = document.createElement(tag);
     if (className) node.className = className;
-    if (text !== undefined) node.innerText = text;
+    if (text !== undefined) node.textContent = text;
     return node;
 }
 
@@ -522,7 +522,7 @@ function resetGame() {
 function refreshHUD() {
     const setText = function (id, value) {
         const node = document.getElementById(id);
-        if (node) node.innerText = value;
+        if (node) node.textContent = value;
     };
     setText('byteBalance', formatNumber(state.bytes));
     setText('hourlyIncome', (state.miningRate * 3600).toFixed(2));
