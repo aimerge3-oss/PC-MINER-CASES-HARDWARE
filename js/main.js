@@ -1,41 +1,70 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. Load game state
-    if (typeof loadGame === 'function') {
-        loadGame();
-    }
-    
-    // 2. Update mining stats
-    if (typeof updateMiningStats === 'function') {
-        updateMiningStats();
-    }
-    
-    // 3. Render navigation bar (if exists)
-    if (typeof nav !== 'undefined' && typeof nav.render === 'function') {
-        nav.render();
-    }
-    
-    // 4. Force first screen (Garage)
-    if (typeof nav !== 'undefined' && typeof nav.show === 'function') {
-        nav.show('garage');
-    } else if (typeof renderGarage === 'function') {
-        renderGarage();
-    }
-    
-    // 5. Mining accumulation each second
-    setInterval(() => {
-        if (typeof state !== 'undefined' && state.storage < state.maxStorage) {
-            state.storage = Math.min(state.maxStorage, state.storage + state.miningRate);
-            state.lastUpdate = Date.now();
-            if (typeof saveGame === 'function') {
-                saveGame();
-            }
-            // Update UI only if on garage screen
-            if (typeof nav !== 'undefined' && nav.current === 'garage') {
-                const storageEl = document.getElementById('storageBar');
-                if (storageEl) {
-                    storageEl.innerText = `${state.storage.toFixed(0)} / ${state.maxStorage.toFixed(0)}`;
-                }
-            }
+// Entry point: boots the game, runs the mining loop and handles saving.
+(function () {
+    'use strict';
+
+    const TICK_MS = 1000;
+    const AUTOSAVE_EVERY_TICKS = 10; // save every ~10 seconds
+    let ticksSinceSave = 0;
+    let loopHandle = null;
+
+    function showFatalError(message) {
+        const content = document.getElementById('content') || document.getElementById('app-container');
+        if (content) {
+            content.innerHTML = '<div class="card"><h2>Ошибка запуска</h2><p>' + message + '</p></div>';
         }
-    }, 1000);
-});
+        console.error(message);
+    }
+
+    function tick() {
+        tickMining(1);
+        refreshHUD();
+        ticksSinceSave += 1;
+        if (ticksSinceSave >= AUTOSAVE_EVERY_TICKS) {
+            ticksSinceSave = 0;
+            saveGame();
+        }
+    }
+
+    function handleVisibilityChange() {
+        if (document.hidden) {
+            saveGame();
+            return;
+        }
+        // Catch up on time lost while the tab was in the background.
+        updateMiningStats();
+        applyOfflineProgress();
+        refreshHUD();
+        if (typeof nav !== 'undefined' && nav.current) nav.render();
+    }
+
+    function handleClick(event) {
+        const target = event.target && event.target.closest ? event.target.closest('[data-action]') : null;
+        if (!target || typeof handleAction !== 'function') return;
+        handleAction(target.getAttribute('data-action'), target.dataset || {});
+    }
+
+    function init() {
+        if (typeof ITEMS === 'undefined' || typeof CASES === 'undefined') {
+            showFatalError('Не загружены каталоги предметов и кейсов (js/data/items.js, js/data/cases.js).');
+            return;
+        }
+        loadGame();
+        updateMiningStats();
+        nav.show('garage');
+
+        if (loopHandle === null) loopHandle = setInterval(tick, TICK_MS);
+
+        document.addEventListener('click', handleClick);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('pagehide', saveGame);
+        window.addEventListener('beforeunload', saveGame);
+        // Save immediately after boot so fresh progress is never lost.
+        saveGame();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();

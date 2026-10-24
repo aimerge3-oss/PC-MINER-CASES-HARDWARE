@@ -1,32 +1,69 @@
 # PC MINER: CASES & HARDWARE
 
-A high-quality browser-based PC building and mining simulator.
+A browser-based PC building and mining simulator built with vanilla HTML5, CSS3 and ES6 JavaScript — no frameworks, no build step, no external dependencies.
 
-## Stage 3 – Mining, Offline, Exchange & Progression
+## Features
 
-### New Mechanics
-- **BYTE** – primary mining currency; earned by computers.
-- **COIN** – secondary currency, obtainable by exchanging BYTE.
-- Mining rate calculated from installed components (power) with factor 0.1 BYTE/sec per power point.
-- Unified storage limits to **6 hours** of current total income.
-- Offline progress: on load, calculates elapsed time, caps at storage capacity.
-- Exchange screen with history and configurable exchangeRate.
-- **Exchange Rate** – default `1000` BYTE = 1 COIN (configurable via `state.exchangeRate`).
-- Experience (exp) and player level, with simple level‑up alerts.
-- Basic achievements (first mine, first 1 000 BYTE).
-- Added navigation entry **Exchange**.
-- UI updates for garage to show BYTE balance, hourly income, storage bar, time to fill, and exchange rate.
-- Added `state.exchangeLog` for exchange history.
-- Updated state handling, saving, and loading.
-- Added `updateMiningStats()` to recompute total rate and storage capacity after any component change.
-- Added `collectBytes()` button (replaces previous collectCoins).
-- Added `addExp()` helper.
-- Added simple experience gain on exchanges.
-- Updated navigation, main loop, and workshop to recalc stats after installs.
+- **Garage** – live BYTE balance, hourly income, total power, storage meter and exchange rate.
+- **Cases** – weighted loot boxes with a roulette animation and ×1 / ×3 / ×5 / ×10 opening.
+- **Workshop** – install inventory parts into the active PC, with socket and memory compatibility checks.
+- **Inventory** – inspect and sell spare hardware (50% of catalog price).
+- **Exchange** – convert BYTE into COIN at a configurable rate, with history.
+- **Farm** – manage multiple PCs (all of them produce income) and build new ones.
+- **Menu** – level, experience, achievements, exchange-rate setting, manual save and progress reset.
+- **Progression** – experience and levels, level-up notifications, achievements, offline earnings.
 
-## How to Run
-Simply open `index.html` in any modern web browser.
+## Mining & economy rules
 
-## Tech Stack
-- HTML5 / CSS3 / Vanilla JS
-- No external dependencies or frameworks.
+| Rule | Value |
+|------|-------|
+| Mining rate | `totalPower × 0.1` BYTE/sec |
+| Storage capacity | `miningRate × 3600 × 6` BYTE (6 hours) |
+| Offline earnings | elapsed time × rate, capped at storage capacity |
+| Exchange rate | `1000` BYTE = 1 COIN (default, configurable in the Menu) |
+| Item sale price | 50% of catalog price |
+| New PC cost | 25 000 ₽ |
+| Experience | 5 EXP per case, 5 EXP per installation, 10 EXP per exchange |
+| Level-up | `exp >= level × 1000` |
+
+Progress is stored in `localStorage` under the `pcMinerSave` key and is validated on load, so corrupted or outdated saves fall back to safe defaults instead of breaking the game.
+
+## How to run
+
+Open `index.html` in any modern browser. No server or installation is required.
+
+## How to test
+
+The project ships with dependency-free headless checks (Node.js 18+):
+
+```bash
+node tests/validate.js     # or: npm test
+```
+
+The suite verifies asset references, catalog/case integrity, economy maths, storage and offline caps, exchange validation, progression, compatibility rules, case opening, persistence, and boots the game in a stubbed DOM.
+
+## Project structure
+
+```
+index.html          # shell, navigation and script/style order
+css/
+  style.css         # theme tokens (light/dark), layout, navigation, forms
+  components.css    # cards, buttons, modal
+  animations.css    # fade/roulette animations, reduced-motion support
+  garage.css        # garage, farm, workshop, inventory and case layouts
+js/
+  data/items.js     # item catalog (window.ITEMS, getItemById)
+  data/cases.js     # case catalog with weighted contents
+  state.js          # state, save/load, mining, exchange, progression
+  navigation.js     # bottom-navigation controller
+  ui.js             # screen renderers, actions and HUD updates
+  main.js           # entry point: boot, game loop, autosave
+assets/icons/       # SVG component icons
+tests/validate.js   # headless compliance checks
+```
+
+## Documentation
+
+- [GDD.md](GDD.md) – game design document
+- [PROGRESS.md](PROGRESS.md) – implementation status
+- [CHANGELOG.md](CHANGELOG.md) – change history
