@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PC MINER: CASES & HARDWARE</title>
+    
+    <!-- Подключение стилей -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="garage.css">
+    <!-- Если есть другие CSS файлы, раскомментируйте строки ниже -->
+    <!-- <link rel="stylesheet" href="components.css"> -->
+    <!-- <link rel="stylesheet" href="animations.css"> -->
+</head>
+<body>
+
+    <!-- Заголовок -->
+    <header style="text-align: center; padding: 15px;">
+        <h2 style="margin: 0;">PC MINER: CASES & HARDWARE</h2>
+    </header>
+
+    <!-- ГЛАВНЫЙ КОНТЕЙНЕР ДЛЯ ИГРОВОГО КОНТЕНТА -->
+    <!-- Именно сюда функции renderGarage, renderCases и т.д. вставляют HTML -->
+    <main id="app-container" style="flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 80px;">
+        <p style="text-align: center; color: #888;">Загрузка...</p>
+    </main>
+
+    <!-- НИЖНЯЯ НАВИГАЦИЯ -->
+    <nav id="main-nav" style="display: flex; justify-content: space-around; align-items: center; background: var(--card-bg); backdrop-filter: blur(12px); border-top: 1px solid var(--border-color); padding: 10px; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;">
+        <button onclick="nav.show('garage')">Garage</button>
+        <button onclick="nav.show('cases')">Cases</button>
+        <button onclick="nav.show('workshop')">Workshop</button>
+        <button onclick="nav.show('inventory')">Inventory</button>
+        <button onclick="nav.show('exchange')">Exchange</button>
+        <button onclick="nav.show('farm')">Farm</button>
+    </nav>
+
+    <!-- Подключение скриптов (ПОРЯДОК ВАЖЕН!) -->
+    <script src="js/state.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="main.js"></script>
+
+</body>
+</html>
