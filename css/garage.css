@@ -1,0 +1,61 @@
+/* Additional layout styles for Garage screen */
+
+/* Container for the whole garage view */
+.garage-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    padding: 15px;
+}
+
+/* Grid of PC case cards */
+.pc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    width: 100%;
+    max-width: 900px;
+}
+
+.pc-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    border-radius: var(--border-radius);
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s, box-shadow 0.2s;
+}
+
+.pc-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.pc-card img {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    margin-bottom: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .pc-grid {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+    .pc-card {
+        padding: 8px;
+    }
+    .pc-card img {
+        width: 48px;
+        height: 48px;
+    }
+}
