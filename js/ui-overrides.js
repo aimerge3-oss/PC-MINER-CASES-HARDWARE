@@ -1,4 +1,4 @@
-// UI overrides — onboarding, brand bonus, slim garage/menu/profile
+// UI overrides — onboarding, brand bonus, slim garage
 function hourlyIncome() { return state.miningRate * 3600; }
 
 function renderGarage() {
@@ -6,7 +6,6 @@ function renderGarage() {
     if (typeof tryCompleteChallenge === 'function') tryCompleteChallenge();
     const container = createEl('div', 'card fade-in');
     const power = totalPower();
-    const fillPercent = state.maxStorage > 0 ? Math.min(100, (state.storage / state.maxStorage) * 100) : 0;
     const ob = state.onboarding || {};
     if (ob.challengeActive && !ob.challengeClaimed) {
         const left = typeof challengeSecondsLeft === 'function' ? challengeSecondsLeft() : 0;
@@ -18,28 +17,29 @@ function renderGarage() {
         banner.innerHTML = '<strong>Мини-цель:</strong> мощность ' + need + ' за ' + mm + ':' + (ss < 10 ? '0' : '') + ss +
             ' → <strong>+' + formatNumber(reward) + ' ₽</strong><br><span class="hint">Сейчас: ' + power + ' / ' + need + '</span>';
         container.appendChild(banner);
-    } else if (ob.challengeClaimed) {
-        container.appendChild(createEl('p', 'hint', '✓ Мини-цель выполнена'));
     }
-    const tasks = createEl('div', 'onboard-tasks');
-    [{ key: 'openCase', label: 'Открой кейс' }, { key: 'install', label: 'Установи деталь' }, { key: 'collect', label: 'Забери BYTE' }].forEach(function (td) {
-        const done = ob.tasks && ob.tasks[td.key];
-        const claimed = ob.tasksClaimed && ob.tasksClaimed[td.key];
-        const chip = createEl('button', 'task-chip' + (done ? ' done' : '') + (claimed ? ' claimed' : ''),
-            (claimed ? '✓ ' : done ? '● ' : '○ ') + td.label);
-        chip.type = 'button';
-        if (done && !claimed) {
-            chip.setAttribute('data-action', 'claim-onboard-task');
-            chip.setAttribute('data-task', td.key);
-        } else { chip.disabled = true; }
-        tasks.appendChild(chip);
-    });
-    container.appendChild(tasks);
+    const allClaimed = ob.tasksClaimed && ob.tasksClaimed.openCase && ob.tasksClaimed.install && ob.tasksClaimed.collect;
+    if (!allClaimed) {
+        const tasks = createEl('div', 'onboard-tasks');
+        [{ key: 'openCase', label: 'Открой кейс' }, { key: 'install', label: 'Установи деталь' }, { key: 'collect', label: 'Забери BYTE' }].forEach(function (td) {
+            const done = ob.tasks && ob.tasks[td.key];
+            const claimed = ob.tasksClaimed && ob.tasksClaimed[td.key];
+            const chip = createEl('button', 'task-chip' + (done ? ' done' : '') + (claimed ? ' claimed' : ''),
+                (claimed ? '✓ ' : done ? '● ' : '○ ') + td.label);
+            chip.type = 'button';
+            if (done && !claimed) {
+                chip.setAttribute('data-action', 'claim-onboard-task');
+                chip.setAttribute('data-task', td.key);
+            } else { chip.disabled = true; }
+            tasks.appendChild(chip);
+        });
+        container.appendChild(tasks);
+    }
     const stats = createEl('div');
     stats.innerHTML = '<h2>Доход майнинга</h2><p>Доход в час: <strong><span id="hourlyIncome">' + hourlyIncome().toFixed(2) +
         '</span> BYTE</strong></p><p>Текущая мощность: <strong><span id="totalPower">' + power +
         '</span></strong></p><p>Хранилище: <span id="storageText">' + formatNumber(state.storage) + ' / ' + formatNumber(state.maxStorage) +
-        '</span></p><div class="storage-track" role="progressbar"><div class="storage-fill" id="storageFill"></div></div><p>Время до заполнения: <span id="timeToFull">' +
+        '</span></p><div class="storage-track"><div class="storage-fill" id="storageFill"></div></div><p>Время до заполнения: <span id="timeToFull">' +
         formatTimeToFull() + '</span></p>';
     container.appendChild(stats);
     const collectBtn = createEl('button', 'button' + (ob.hintStep === 3 ? ' hint-pulse' : ''), 'Забрать');
@@ -47,7 +47,7 @@ function renderGarage() {
     container.appendChild(collectBtn);
     const active = typeof getActivePC === 'function' ? getActivePC() : null;
     if (active && active.brandBonus > 0) {
-        container.appendChild(createEl('p', 'hint brand-bonus', 'Бонус бренда +' + Math.round(active.brandBonus * 100) + '% к доходу'));
+        container.appendChild(createEl('p', 'hint brand-bonus', 'Бонус бренда +' + Math.round(active.brandBonus * 100) + '%'));
     }
     return container;
 }
@@ -65,16 +65,16 @@ function renderWorkshop() {
         const inv = renderInventory(); inv.classList.remove('card', 'fade-in'); container.appendChild(inv); return container;
     }
     const pc = getActivePC();
-    if (!pc) { container.appendChild(createEl('h2', '', 'Мастерская')); container.appendChild(createEl('p', '', 'Нет доступных ПК.')); return container; }
+    if (!pc) { container.appendChild(createEl('h2', '', 'Мастерская')); container.appendChild(createEl('p', '', 'Нет ПК')); return container; }
     container.appendChild(createEl('h2', '', 'Мастерская — ' + pc.name));
-    if (pc.brandBonus > 0) container.appendChild(createEl('p', 'hint brand-bonus', 'Полный набор бренда: +' + Math.round(pc.brandBonus * 100) + '% к майнингу'));
-    else container.appendChild(createEl('p', 'hint', 'Собери все слоты одного бренда (Gigabyte / MSI / ASUS) — +10% к доходу'));
+    if (pc.brandBonus > 0) container.appendChild(createEl('p', 'hint brand-bonus', 'Полный набор бренда: +' + Math.round(pc.brandBonus * 100) + '%'));
+    else container.appendChild(createEl('p', 'hint', 'Полный сет одного бренда — +10%'));
     PC_SLOTS.forEach(function (slot) {
         const installed = getItemById(pc.components[slot]);
         const options = state.inventory.filter(function (item) { return item.category === slot; });
         const row = createEl('div', 'workshop-row');
         row.appendChild(createEl('strong', 'slot-label', slot.toUpperCase()));
-        row.appendChild(createEl('span', 'slot-current', installed ? installed.name + (installed.brand ? ' · ' + installed.brand : '') : '—'));
+        row.appendChild(createEl('span', 'slot-current', installed ? installed.name : '—'));
         if (options.length === 0) { row.appendChild(createEl('span', 'hint', 'нет запчастей')); container.appendChild(row); return; }
         const select = document.createElement('select');
         options.forEach(function (item) {
@@ -84,12 +84,12 @@ function renderWorkshop() {
             select.appendChild(opt);
         });
         row.appendChild(select);
-        const btn = createEl('button', 'button' + ((state.onboarding && state.onboarding.hintStep === 2) ? ' hint-pulse' : ''), 'Установить');
+        const btn = createEl('button', 'button', 'Установить');
         btn.type = 'button'; btn.setAttribute('data-action', 'install'); btn.setAttribute('data-slot', slot); btn.setAttribute('data-index', select.value);
         select.addEventListener('change', function () { btn.setAttribute('data-index', select.value); });
         row.appendChild(btn); container.appendChild(row);
     });
-    container.appendChild(createEl('p', 'hint', 'Суммарная мощность: ' + pc.power + ' · Доход: ' + hourlyIncome().toFixed(2) + ' BYTE/ч'));
+    container.appendChild(createEl('p', 'hint', 'Мощность: ' + pc.power));
     return container;
 }
 
@@ -97,10 +97,10 @@ function renderMenu() {
     const container = createEl('div', 'card fade-in menu-screen');
     container.appendChild(createEl('h2', '', 'Меню'));
     const grid = createEl('div', 'menu-grid');
-    [{ action: 'nav', screen: 'profile', title: 'Профиль', hint: 'Уровень, задания, статистика', color: 'purple' },
-     { action: 'nav', screen: 'exchange', title: 'Обменник', hint: 'BYTE → COIN → ₽', color: 'blue' },
-     { action: 'nav', screen: 'farm', title: 'Ферма', hint: 'Управление ПК', color: 'green' },
-     { action: 'save', screen: '', title: 'Сохранить', hint: 'Записать прогресс', color: 'gray' },
+    [{ action: 'nav', screen: 'profile', title: 'Профиль', hint: 'Уровень, задания', color: 'purple' },
+     { action: 'nav', screen: 'exchange', title: 'Обменник', hint: 'По желанию', color: 'blue' },
+     { action: 'nav', screen: 'farm', title: 'Ферма', hint: 'ПК', color: 'green' },
+     { action: 'save', screen: '', title: 'Сохранить', hint: 'Прогресс', color: 'gray' },
      { action: 'reset', screen: '', title: 'Сбросить', hint: 'Новая игра', color: 'red' }].forEach(function (item) {
         const card = createEl('button', 'menu-tile menu-' + item.color);
         card.type = 'button'; card.setAttribute('data-action', item.action);
@@ -110,7 +110,6 @@ function renderMenu() {
         grid.appendChild(card);
     });
     container.appendChild(grid);
-    container.appendChild(createEl('p', 'hint', 'Курс: ' + state.exchangeRate + ' BYTE = 1 COIN'));
     return container;
 }
 
@@ -121,28 +120,7 @@ function renderProfile() {
     head.appendChild(createEl('div', 'profile-avatar-lg', String(state.level)));
     head.appendChild(createEl('h2', '', 'Игрок'));
     head.appendChild(createEl('p', 'hint', 'Уровень ' + state.level));
-    const need = expNeeded(state.level);
-    const expBar = createEl('div', 'exp-track');
-    const expFill = document.createElement('div');
-    expFill.className = 'exp-fill';
-    expFill.style.width = Math.min(100, (state.exp / need) * 100).toFixed(1) + '%';
-    expBar.appendChild(expFill); head.appendChild(expBar);
-    head.appendChild(createEl('p', 'hint', formatNumber(state.exp) + ' / ' + formatNumber(need) + ' опыта'));
     container.appendChild(head);
-    container.appendChild(createEl('h3', '', 'Статистика'));
-    const stats = createEl('div', 'stats-grid');
-    [[String((state.computers || []).length), 'в гараже'],
-     [(typeof collectionCount === 'function' ? collectionCount() : 0) + '/' + (ITEMS ? ITEMS.length : '?'), 'коллекция'],
-     [formatNumber(typeof collectionValue === 'function' ? collectionValue() : 0), 'стоимость, ₽'],
-     [String(state.casesOpened || 0), 'кейсов'],
-     [formatNumber(state.bytes), 'BYTE'],
-     [formatNumber(state.totalSpent || 0), 'потрачено ₽']].forEach(function (pair) {
-        const cell = createEl('div', 'stat-cell');
-        cell.appendChild(createEl('strong', '', pair[0]));
-        cell.appendChild(createEl('span', '', pair[1]));
-        stats.appendChild(cell);
-    });
-    container.appendChild(stats);
     return container;
 }
 
@@ -154,8 +132,7 @@ function showIncomeDeltaPopup(beforeRate, afterRate) {
     const overlay = createEl('div', 'modal-overlay');
     const modal = createEl('div', 'modal-content');
     modal.appendChild(createEl('h3', '', 'Доход вырос!'));
-    modal.appendChild(createEl('p', '', formatNumber(Math.round(beforeH)) + ' → ' + formatNumber(Math.round(afterH)) + ' BYTE/ч'));
-    modal.appendChild(createEl('p', '', '+' + pct + '% к майнингу'));
+    modal.appendChild(createEl('p', '', formatNumber(Math.round(beforeH)) + ' → ' + formatNumber(Math.round(afterH)) + ' BYTE/ч (+' + pct + '%)'));
     const btn = createEl('button', 'button', 'Круто!');
     btn.type = 'button';
     btn.addEventListener('click', function () { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); });
@@ -167,7 +144,7 @@ function showFreeCaseIntro() {
     const overlay = createEl('div', 'modal-overlay');
     const modal = createEl('div', 'modal-content');
     modal.appendChild(createEl('h3', '', 'Приветственный кейс!'));
-    modal.appendChild(createEl('p', '', 'Открой бесплатный Базовый кейс и получи первую деталь.'));
+    modal.appendChild(createEl('p', '', 'Открой бесплатный Базовый кейс.'));
     const btn = createEl('button', 'button', 'Открыть бесплатно');
     btn.type = 'button';
     btn.addEventListener('click', function () {
@@ -175,7 +152,6 @@ function showFreeCaseIntro() {
         state.onboarding.freeCaseDone = true; saveGame();
         const item = typeof grantFreeCase === 'function' ? grantFreeCase(1) : null;
         if (item && typeof showLootGrid === 'function') showLootGrid([item]);
-        else if (item) { notify('Выпало: ' + item.name); nav.render(); }
         advanceHint(2);
         if (typeof startOnboardingChallenge === 'function') startOnboardingChallenge();
     });

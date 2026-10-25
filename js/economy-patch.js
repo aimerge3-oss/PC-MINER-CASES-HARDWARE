@@ -1,4 +1,4 @@
-// Non-blocking notifications (replaces alert)
+// Quiet notify — no alert spam
 (function () {
     window.notify = function (message) {
         if (typeof showToast === 'function') {
@@ -10,9 +10,7 @@
             el.className = 'toast-msg';
             el.textContent = String(message || '');
             document.body.appendChild(el);
-            setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 2400);
-        } catch (e) {
-            if (typeof console !== 'undefined') console.log(message);
-        }
+            setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 2000);
+        } catch (e) {}
     };
 })();
