@@ -1,4 +1,4 @@
-/* Layout for the garage, farm, workshop and case screens */
+/* Layout for garage, farm, workshop, cases + onboarding */
 
 .pc-grid {
     display: grid;
@@ -13,16 +13,10 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     text-align: center; display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 6px;
-    transition: transform 0.1s, box-shadow 0.2s;
 }
 .pc-card.active { border-color: var(--accent-color); box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.35); }
-.pc-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
 .pc-card img { width: 64px; height: 64px; object-fit: contain; }
 .pc-name { font-weight: 600; }
-
-.case-card { margin-bottom: 12px; }
-.case-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.case-actions .button { flex: 1 1 100px; }
 
 .inventory-list { display: flex; flex-direction: column; gap: 8px; }
 .inventory-item {
@@ -38,12 +32,8 @@
     padding: 8px 0; border-bottom: 1px solid var(--border-color);
 }
 .workshop-row select { flex: 1 1 150px; margin-bottom: 0; }
-.workshop-row .button { padding: 10px 14px; font-size: 0.85rem; }
 .slot-label { min-width: 60px; }
 .slot-current { flex: 1 1 100px; color: var(--text-muted); font-size: 0.9rem; }
-
-.exchange-actions, .menu-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-.achievement-list { padding-left: 0; list-style: none; }
 
 .cases-screen { max-width: 520px; margin: 0 auto; }
 .case-picker { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
@@ -57,7 +47,6 @@
 .case-odds-bars { display: flex; flex-wrap: wrap; gap: 10px; }
 .odds-row { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; }
 .odds-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: #888; }
-.odds-dot.rarity-gray { background: #888; }
 .odds-dot.rarity-blue { background: #007aff; }
 .odds-dot.rarity-purple { background: #a020f0; }
 .odds-dot.rarity-yellow { background: #ffd700; }
@@ -72,7 +61,7 @@
     align-items: center; gap: 4px; min-height: 96px;
 }
 .loot-cell img { width: 48px; height: 48px; object-fit: contain; }
-.loot-name { font-size: 0.7rem; line-height: 1.2; color: var(--text-color); }
+.loot-name { font-size: 0.7rem; line-height: 1.2; }
 .loot-empty { opacity: 0.5; justify-content: center; }
 .loot-q { font-size: 1.6rem; color: var(--text-muted); }
 .loot-reveal { animation: lootPop 0.25s ease-out; }
@@ -117,7 +106,6 @@
     display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left;
     border: none; border-radius: 16px; padding: 14px; font: inherit; cursor: pointer; color: var(--text-color);
 }
-.menu-tile strong { font-size: 0.95rem; }
 .menu-purple { background: linear-gradient(135deg, #e9d8fd, #d6bcfa); }
 .menu-blue { background: linear-gradient(135deg, #bee3f8, #90cdf4); }
 .menu-green { background: linear-gradient(135deg, #c6f6d5, #9ae6b4); }
@@ -137,14 +125,7 @@
     display: flex; align-items: center; justify-content: center;
     background: linear-gradient(135deg, #f6ad55, #ed8936);
     color: #fff; font-size: 1.6rem; font-weight: 700;
-    box-shadow: 0 0 0 3px rgba(237,137,54,0.3);
 }
-.profile-badges { display: flex; justify-content: center; gap: 8px; margin: 8px 0; }
-.badge {
-    background: #4a5568; color: #fff; border-radius: 999px; padding: 4px 10px;
-    font-size: 0.75rem; font-weight: 600;
-}
-.badge-blue { background: #3182ce; }
 .exp-track {
     height: 8px; background: rgba(0,0,0,0.08); border-radius: 999px; overflow: hidden; margin: 8px 0 4px;
 }
@@ -156,14 +137,35 @@
 }
 .stat-cell strong { font-size: 1.05rem; }
 .stat-cell span { font-size: 0.7rem; color: var(--text-muted); }
-.quest-row {
-    display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border-color);
-}
-.quest-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-.quest-row .button { padding: 8px 12px; font-size: 0.8rem; flex-shrink: 0; }
 
-@media (max-width: 600px) {
-    .pc-grid { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
-    .pc-card { padding: 8px; }
-    .pc-card img { width: 48px; height: 48px; }
+/* Onboarding */
+.challenge-banner {
+    background: linear-gradient(135deg, rgba(0,122,255,0.15), rgba(88,86,214,0.2));
+    border: 1px solid rgba(0,122,255,0.35);
+    border-radius: 14px; padding: 12px 14px; margin-bottom: 12px;
+    font-size: 0.9rem; line-height: 1.4;
+}
+.onboard-tasks { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.task-chip {
+    border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color);
+    border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 0.75rem; font-weight: 600; cursor: pointer;
+}
+.task-chip.done:not(.claimed) {
+    border-color: var(--accent-color); color: var(--accent-color);
+    animation: hintPulse 1.2s ease-in-out infinite;
+}
+.task-chip.claimed { opacity: 0.55; cursor: default; }
+.brand-bonus { color: #38a169; font-weight: 600; }
+.nav-hint {
+    position: relative; color: var(--accent-color) !important;
+    box-shadow: 0 0 0 2px rgba(0,122,255,0.45);
+    animation: hintPulse 1.2s ease-in-out infinite;
+}
+.hint-pulse {
+    animation: hintPulse 1.2s ease-in-out infinite;
+    box-shadow: 0 0 0 3px rgba(0,122,255,0.4);
+}
+@keyframes hintPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.04); }
 }
