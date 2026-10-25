@@ -55,3 +55,8 @@ window.getItemById = function (id) {
 };
 window.BRAND_SLOTS = ['cpu', 'gpu', 'mobo', 'ram', 'storage', 'psu', 'case'];
 window.BRAND_SET_BONUS = 0.10;
+window.BRAND_TAG = { Gigabyte: 'Giga', MSI: 'MI', ASUS: 'ASU' };
+window.brandTag = function (brand) {
+    if (!brand) return '';
+    return (window.BRAND_TAG && window.BRAND_TAG[brand]) || String(brand).slice(0, 4);
+};
