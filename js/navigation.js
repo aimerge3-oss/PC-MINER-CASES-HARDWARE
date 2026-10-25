@@ -1,10 +1,9 @@
 // Bottom-navigation controller.
-// Screens not in the bottom bar (profile, inventory, exchange, farm) stay reachable via actions.
-const SCREENS = ['garage', 'cases', 'workshop', 'inventory', 'exchange', 'farm', 'menu', 'profile'];
+const SCREENS = ['garage', 'cases', 'workshop', 'inventory', 'exchange', 'farm', 'menu', 'profile', 'service', 'races'];
 
 const nav = {
     current: 'garage',
-    workshopTab: 'build', // 'build' | 'stock'
+    workshopTab: 'build',
 
     show(screen) {
         this.current = SCREENS.indexOf(screen) !== -1 ? screen : 'garage';
@@ -38,7 +37,9 @@ const nav = {
             exchange: function () { content.appendChild(renderExchange()); },
             farm: function () { content.appendChild(renderFarm()); },
             menu: function () { content.appendChild(renderMenu()); },
-            profile: function () { content.appendChild(renderProfile()); }
+            profile: function () { content.appendChild(renderProfile()); },
+            service: function () { content.appendChild(renderService()); },
+            races: function () { content.appendChild(renderRaces()); }
         };
         const render = renderers[this.current] || renderers.garage;
         render();
