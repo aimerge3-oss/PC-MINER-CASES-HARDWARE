@@ -20,6 +20,12 @@ const nav = {
         const content = this.getContainer();
         if (!content) return;
         content.innerHTML = '';
+        function fallbackScreen(title, msg) {
+            const el = document.createElement('div');
+            el.className = 'card fade-in';
+            el.innerHTML = '<h2>' + title + '</h2><p>' + msg + '</p>';
+            return el;
+        }
         const renderers = {
             garage: function () {
                 content.appendChild(renderGarage());
@@ -38,11 +44,22 @@ const nav = {
             farm: function () { content.appendChild(renderFarm()); },
             menu: function () { content.appendChild(renderMenu()); },
             profile: function () { content.appendChild(renderProfile()); },
-            service: function () { content.appendChild(renderService()); },
-            races: function () { content.appendChild(renderRaces()); }
+            service: function () {
+                if (typeof renderService === 'function') content.appendChild(renderService());
+                else content.appendChild(fallbackScreen('Обслуживание', 'Модуль не загружен'));
+            },
+            races: function () {
+                if (typeof renderRaces === 'function') content.appendChild(renderRaces());
+                else content.appendChild(fallbackScreen('Гонки', 'Модуль не загружен'));
+            }
         };
-        const render = renderers[this.current] || renderers.garage;
-        render();
+        try {
+            const render = renderers[this.current] || renderers.garage;
+            render();
+        } catch (err) {
+            console.error('nav.render', err);
+            content.appendChild(fallbackScreen('Ошибка экрана', (err && err.message) ? err.message : String(err)));
+        }
         this.updateActiveButton();
         if (typeof refreshHUD === 'function') refreshHUD();
     },
