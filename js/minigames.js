@@ -27,7 +27,7 @@
         if (!state.minigames.pcStamina) state.minigames.pcStamina = {};
         if (!state.minigames.lastPcTick) state.minigames.lastPcTick = {};
         if (!state.minigames.lastService) state.minigames.lastService = {};
-        regenStamina();
+        // do NOT call regenStamina here — it would recurse forever
     }
 
     function regenStamina() {
@@ -107,7 +107,7 @@
     }
 
     window.generateRaceOpponents = function (pc) {
-        const power = pc.power || calculatePower(pc) || 15;
+        const power = pc.power || (typeof calculatePower === 'function' ? calculatePower(pc) : 15) || 15;
         const names = ['Сашка_Буст', 'NeonRider', 'ByteKiller', 'Overclock99', 'FarmKing', 'SilentGPU', 'RGBMaster'];
         return [0, 1, 2].map(function (tier, i) {
             const mult = 0.7 + tier * 0.35 + Math.random() * 0.2;
