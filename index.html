@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="description" content="PC MINER: CASES & HARDWARE — браузерный симулятор сборки и майнинга ПК.">
-    <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+    <meta name="description" content="PC MINER: CASES & HARDWARE">
     <title>PC MINER: CASES & HARDWARE</title>
     <link rel="icon" href="assets/icons/cpu.svg" type="image/svg+xml">
     <link rel="stylesheet" href="css/style.css">
@@ -14,7 +12,6 @@
     <link rel="stylesheet" href="css/garage.css">
 </head>
 <body>
-
     <header class="app-header">
         <button type="button" class="profile-btn" data-action="nav" data-screen="profile" aria-label="Профиль">
             <span class="profile-avatar" id="hdrAvatar">1</span>
@@ -29,18 +26,13 @@
         </div>
         <span class="header-spacer" aria-hidden="true"></span>
     </header>
-
-    <main id="content" class="app-content">
-        <p class="loading">Загрузка…</p>
-    </main>
-
+    <main id="content" class="app-content"><p class="loading">Загрузка…</p></main>
     <nav id="main-nav" class="nav-bar" aria-label="Основная навигация">
         <button type="button" data-action="nav" data-screen="garage">Гараж</button>
         <button type="button" data-action="nav" data-screen="cases">Кейсы</button>
         <button type="button" data-action="nav" data-screen="workshop">Мастерская</button>
         <button type="button" data-action="nav" data-screen="menu">Меню</button>
     </nav>
-
     <script src="js/data/items.js"></script>
     <script src="js/data/cases.js"></script>
     <script src="js/state.js"></script>
@@ -50,7 +42,7 @@
     <script src="js/navigation.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/ui-overrides.js"></script>
+    <script src="js/minigames-ui.js"></script>
     <script src="js/main.js"></script>
-
 </body>
 </html>
