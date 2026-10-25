@@ -3,56 +3,34 @@
 // ==========================================================================
 
 const SAVE_KEY = 'pcMinerSave';
-const MINING_FACTOR = 0.1;      // BYTE per second per power point
-const STORAGE_HOURS = 6;        // storage holds this many hours of production
-const SELL_RATE = 0.5;          // items sell for this share of their price
-const PC_BUILD_COST = 25000;    // cost of an additional PC in the Farm
-const DEFAULT_EXCHANGE_RATE = 1000; // BYTE per 1 COIN
+const MINING_FACTOR = 0.1;
+const STORAGE_HOURS = 6;
+const SELL_RATE = 0.5;
+const PC_BUILD_COST = 25000;
+const DEFAULT_EXCHANGE_RATE = 1000;
 const RATE_MIN = 800;
 const RATE_MAX = 1200;
-const RATE_STEP = 0.03; // ±3% jitter per tick
-const COIN_TO_RUB = 50; // 1 COIN = 50 ₽
+const RATE_STEP = 0.03;
+const COIN_TO_RUB = 50;
 const MAX_EXCHANGE_LOG = 50;
 const EXP_REWARDS = { caseOpen: 5, install: 5, exchange: 10 };
 
 const state = {
-    money: 0,
-    bytes: 0,
-    coins: 0,
-    storage: 0,
-    maxStorage: 0,
-    miningRate: 0,
-    exp: 0,
-    level: 1,
-    achievements: {},
-    inventory: [],
-    activePCId: 1,
-    computers: [],
-    lastUpdate: null,
-    exchangeLog: [],
-    exchangeRate: DEFAULT_EXCHANGE_RATE
+    money: 0, bytes: 0, coins: 0, storage: 0, maxStorage: 0, miningRate: 0,
+    exp: 0, level: 1, achievements: {}, inventory: [], activePCId: 1, computers: [],
+    lastUpdate: null, exchangeLog: [], exchangeRate: DEFAULT_EXCHANGE_RATE,
+    casesOpened: 0, totalSpent: 0, quests: { daily: {}, weekly: {} }, questDay: null, questWeek: null
 };
 
 function createStarterState() {
     const now = Date.now();
     const components = { cpu: 1, gpu: 2, mobo: 3, ram: 4, storage: 5, psu: 6, case: 7 };
-    const starterPc = { id: 1, name: 'Starter PC', components: components, power: 0 };
     return {
-        money: 50000,
-        bytes: 0,
-        coins: 0,
-        storage: 0,
-        maxStorage: 0,
-        miningRate: 0,
-        exp: 0,
-        level: 1,
-        achievements: {},
-        inventory: [],
-        activePCId: 1,
-        computers: [starterPc],
-        lastUpdate: now,
-        exchangeLog: [],
-        exchangeRate: DEFAULT_EXCHANGE_RATE
+        money: 50000, bytes: 0, coins: 0, storage: 0, maxStorage: 0, miningRate: 0,
+        exp: 0, level: 1, achievements: {}, inventory: [], activePCId: 1,
+        computers: [{ id: 1, name: 'Starter PC', components: components, power: 0 }],
+        lastUpdate: now, exchangeLog: [], exchangeRate: DEFAULT_EXCHANGE_RATE,
+        casesOpened: 0, totalSpent: 0, quests: { daily: {}, weekly: {} }, questDay: null, questWeek: null
     };
 }
 
@@ -62,24 +40,14 @@ function toNonNegativeNumber(value, fallback) {
 }
 
 function saveGame() {
-    try {
-        localStorage.setItem(SAVE_KEY, JSON.stringify(state));
-        return true;
-    } catch (err) {
-        console.warn('Не удалось сохранить игру:', err);
-        return false;
-    }
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); return true; }
+    catch (err) { console.warn('Не удалось сохранить игру:', err); return false; }
 }
 
 function loadGame() {
     let saved = null;
-    try {
-        const raw = localStorage.getItem(SAVE_KEY);
-        if (raw) saved = JSON.parse(raw);
-    } catch (err) {
-        console.warn('Сохранение повреждено, начинаем новую игру:', err);
-        saved = null;
-    }
+    try { const raw = localStorage.getItem(SAVE_KEY); if (raw) saved = JSON.parse(raw); }
+    catch (err) { console.warn('Сохранение повреждено, начинаем новую игру:', err); saved = null; }
     const source = saved && typeof saved === 'object' ? normalizeState(saved) : createStarterState();
     Object.keys(state).forEach(function (key) { delete state[key]; });
     Object.assign(state, source);
@@ -122,6 +90,13 @@ function normalizeState(raw) {
     const activeExists = merged.computers.some(function (pc) { return pc.id === Number(raw.activePCId); });
     merged.activePCId = activeExists ? Number(raw.activePCId) : merged.computers[0].id;
     merged.lastUpdate = Number.isFinite(Number(raw.lastUpdate)) ? Number(raw.lastUpdate) : Date.now();
+    merged.casesOpened = Math.floor(toNonNegativeNumber(raw.casesOpened, 0));
+    merged.totalSpent = toNonNegativeNumber(raw.totalSpent, 0);
+    merged.quests = raw.quests && typeof raw.quests === 'object'
+        ? { daily: raw.quests.daily || {}, weekly: raw.quests.weekly || {} }
+        : { daily: {}, weekly: {} };
+    merged.questDay = raw.questDay || null;
+    merged.questWeek = raw.questWeek || null;
     return merged;
 }
 
@@ -137,9 +112,7 @@ function calculatePower(pc) {
 
 function updateMiningStats() {
     if (!Array.isArray(state.computers)) state.computers = [];
-    state.computers.forEach(function (pc) {
-        pc.power = calculatePower(pc);
-    });
+    state.computers.forEach(function (pc) { pc.power = calculatePower(pc); });
     const totalPower = state.computers.reduce(function (sum, pc) { return sum + pc.power; }, 0);
     state.miningRate = totalPower * MINING_FACTOR;
     state.maxStorage = state.miningRate * 3600 * STORAGE_HOURS;
@@ -166,37 +139,27 @@ function tickMining(seconds) {
 function applyOfflineProgress() {
     const now = Date.now();
     const elapsedSec = Math.floor((now - state.lastUpdate) / 1000);
-    if (!Number.isFinite(elapsedSec) || elapsedSec <= 0) {
-        state.lastUpdate = now;
-        return 0;
-    }
+    if (!Number.isFinite(elapsedSec) || elapsedSec <= 0) { state.lastUpdate = now; return 0; }
     updateMiningStats();
     const spaceLeft = Math.max(0, state.maxStorage - state.storage);
-    if (state.miningRate <= 0 || spaceLeft <= 0) {
-        state.lastUpdate = now;
-        return 0;
-    }
+    if (state.miningRate <= 0 || spaceLeft <= 0) { state.lastUpdate = now; return 0; }
     const possibleAdd = elapsedSec * state.miningRate;
     const actualAdd = Math.min(possibleAdd, spaceLeft);
     state.storage += actualAdd;
     if (actualAdd < possibleAdd) {
         const secsUntilFull = Math.floor(spaceLeft / state.miningRate);
         state.lastUpdate = state.lastUpdate + secsUntilFull * 1000;
-    } else {
-        state.lastUpdate = now;
-    }
+    } else { state.lastUpdate = now; }
     return actualAdd;
 }
 
 function collectBytes() {
-    if (state.storage <= 0) {
-        notify('Хранилище пусто');
-        return 0;
-    }
+    if (state.storage <= 0) { notify('Хранилище пусто'); return 0; }
     const collected = state.storage;
     state.bytes += collected;
     state.storage = 0;
     state.lastUpdate = Date.now();
+    if (typeof bumpQuest === 'function') bumpQuest('collect', collected);
     checkAchievements();
     saveGame();
     return collected;
@@ -205,17 +168,12 @@ function collectBytes() {
 function exchangeBytesToCoins(amount) {
     const value = Number(amount);
     if (!Number.isFinite(value) || value <= 0 || Math.floor(value) !== value) {
-        notify('Введите корректное целое количество BYTE');
-        return null;
+        notify('Введите корректное целое количество BYTE'); return null;
     }
-    if (value > state.bytes) {
-        notify('Недостаточно BYTE для обмена');
-        return null;
-    }
+    if (value > state.bytes) { notify('Недостаточно BYTE для обмена'); return null; }
     const coinsGained = Math.floor(value / state.exchangeRate);
     if (coinsGained <= 0) {
-        notify('Слишком мало BYTE для обмена: нужно минимум ' + state.exchangeRate);
-        return null;
+        notify('Слишком мало BYTE для обмена: нужно минимум ' + state.exchangeRate); return null;
     }
     if (!Array.isArray(state.exchangeLog)) state.exchangeLog = [];
     state.exchangeLog.unshift({ time: Date.now(), bytes: value, coins: coinsGained });
@@ -233,9 +191,7 @@ function fluctuateExchangeRate() {
     let next = Math.round(state.exchangeRate * (1 + direction * step));
     if (next < RATE_MIN) next = RATE_MIN;
     if (next > RATE_MAX) next = RATE_MAX;
-    if (next === state.exchangeRate) {
-        next = Math.min(RATE_MAX, Math.max(RATE_MIN, next + direction));
-    }
+    if (next === state.exchangeRate) next = Math.min(RATE_MAX, Math.max(RATE_MIN, next + direction));
     state.exchangeRate = next;
     return next;
 }
@@ -243,13 +199,9 @@ function fluctuateExchangeRate() {
 function exchangeCoinsToMoney(amount) {
     const value = Number(amount);
     if (!Number.isFinite(value) || value <= 0 || Math.floor(value) !== value) {
-        notify('Введите корректное целое количество COIN');
-        return null;
+        notify('Введите корректное целое количество COIN'); return null;
     }
-    if (value > state.coins) {
-        notify('Недостаточно COIN');
-        return null;
-    }
+    if (value > state.coins) { notify('Недостаточно COIN'); return null; }
     const rub = value * COIN_TO_RUB;
     state.coins -= value;
     state.money += rub;
@@ -260,9 +212,7 @@ function exchangeCoinsToMoney(amount) {
     return rub;
 }
 
-function expNeeded(level) {
-    return Math.max(1, Math.floor(level)) * 1000;
-}
+function expNeeded(level) { return Math.max(1, Math.floor(level)) * 1000; }
 
 function addExp(amount) {
     const value = Number(amount);
@@ -274,9 +224,7 @@ function addExp(amount) {
         state.level += 1;
         levelsGained += 1;
     }
-    if (levelsGained > 0) {
-        notify('Поздравляем! Вы достигли уровня ' + state.level);
-    }
+    if (levelsGained > 0) notify('Поздравляем! Вы достигли уровня ' + state.level);
     checkAchievements();
     saveGame();
     return levelsGained;
@@ -299,6 +247,101 @@ function checkAchievements() {
         }
     });
     return unlocked;
+}
+
+function dayKey(ts) {
+    const d = new Date(ts || Date.now());
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+}
+function weekKey(ts) {
+    const d = new Date(ts || Date.now());
+    const onejan = new Date(d.getFullYear(), 0, 1);
+    const week = Math.ceil((((d - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+    return d.getFullYear() + '-W' + week;
+}
+
+const DAILY_QUESTS = [
+    { id: 'open3', title: 'Открыть 3 кейса', target: 3, metric: 'cases', rewardExp: 30, rewardRub: 500 },
+    { id: 'collect1k', title: 'Собрать 1 000 BYTE', target: 1000, metric: 'collect', rewardExp: 25, rewardRub: 300 },
+    { id: 'install1', title: 'Установить деталь', target: 1, metric: 'install', rewardExp: 20, rewardRub: 200 }
+];
+const WEEKLY_QUESTS = [
+    { id: 'open20', title: 'Открыть 20 кейсов', target: 20, metric: 'cases', rewardExp: 150, rewardRub: 3000 },
+    { id: 'mine50k', title: 'Намайнить 50 000 BYTE', target: 50000, metric: 'collect', rewardExp: 120, rewardRub: 2500 },
+    { id: 'build2', title: 'Собрать 2 ПК', target: 2, metric: 'pcs', rewardExp: 100, rewardRub: 2000 }
+];
+
+function ensureQuests() {
+    const today = dayKey();
+    const week = weekKey();
+    if (!state.quests || typeof state.quests !== 'object') state.quests = { daily: {}, weekly: {} };
+    if (state.questDay !== today) {
+        state.questDay = today;
+        state.quests.daily = {};
+        DAILY_QUESTS.forEach(function (q) { state.quests.daily[q.id] = { progress: 0, claimed: false }; });
+    }
+    if (state.questWeek !== week) {
+        state.questWeek = week;
+        state.quests.weekly = {};
+        WEEKLY_QUESTS.forEach(function (q) { state.quests.weekly[q.id] = { progress: 0, claimed: false }; });
+    }
+}
+
+function bumpQuest(metric, amount) {
+    ensureQuests();
+    const add = Number(amount) || 1;
+    function bump(list, bag) {
+        list.forEach(function (q) {
+            if (q.metric !== metric) return;
+            const entry = bag[q.id];
+            if (!entry || entry.claimed) return;
+            entry.progress = Math.min(q.target, (entry.progress || 0) + add);
+        });
+    }
+    bump(DAILY_QUESTS, state.quests.daily);
+    bump(WEEKLY_QUESTS, state.quests.weekly);
+}
+
+function claimQuest(scope, questId) {
+    ensureQuests();
+    const list = scope === 'weekly' ? WEEKLY_QUESTS : DAILY_QUESTS;
+    const bag = scope === 'weekly' ? state.quests.weekly : state.quests.daily;
+    const def = list.find(function (q) { return q.id === questId; });
+    const entry = bag[questId];
+    if (!def || !entry || entry.claimed) return false;
+    if ((entry.progress || 0) < def.target) { notify('Задание ещё не выполнено'); return false; }
+    entry.claimed = true;
+    addExp(def.rewardExp);
+    state.money += def.rewardRub;
+    notify('+' + def.rewardExp + ' EXP · +' + def.rewardRub + ' ₽');
+    saveGame();
+    return true;
+}
+
+function collectionCount() {
+    const ids = new Set();
+    (state.inventory || []).forEach(function (item) { if (item && item.id != null) ids.add(item.id); });
+    (state.computers || []).forEach(function (pc) {
+        if (!pc.components) return;
+        Object.keys(pc.components).forEach(function (slot) {
+            const id = pc.components[slot];
+            if (id != null) ids.add(id);
+        });
+    });
+    return ids.size;
+}
+
+function collectionValue() {
+    let total = 0;
+    (state.inventory || []).forEach(function (item) { total += Number(item && item.price) || 0; });
+    (state.computers || []).forEach(function (pc) {
+        if (!pc.components) return;
+        Object.keys(pc.components).forEach(function (slot) {
+            const item = getItemById(pc.components[slot]);
+            if (item) total += Number(item.price) || 0;
+        });
+    });
+    return total;
 }
 
 function notify(message) {
